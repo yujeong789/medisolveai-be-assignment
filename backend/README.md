@@ -103,7 +103,7 @@
 ### 5. API 문서 접근 (Swagger)
 
 - Gateway API: http://localhost:8000/docs
-- Patient API: http://localhost:8000/docs
+- Patient API: http://localhost:8001/docs
 - Admin API: http://localhost:8002/docs
 
 ---
@@ -125,3 +125,4 @@
 > AI는 설계 검증과 문제 해결을 위한 보조 도구로 활용했습니다.
 
 ---
+
