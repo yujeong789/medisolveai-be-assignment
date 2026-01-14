@@ -1,0 +1,86 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: medisolve-db
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - TZ=Asia/Seoul
+    ports:
+      - "3305:3306"
+    volumes:
+      - db-data:/var/lib/mysql # 서버 꺼져도 db 데이터 유지
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: medisolve-gateway
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - .:/app
+    command: >
+      uv run uvicorn app.gateway.main:app
+      --host 0.0.0.0
+      --port 8000
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  patient-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: medisolve-patient-api
+    environment:
+      - TZ=Asia/Seoul
+    command: >
+      uv run uvicorn app.patient.main:app
+      --host 0.0.0.0
+      --port 8001
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  admin-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: medisolve-admin-api
+    environment:
+      - TZ=Asia/Seoul
+    command: >
+      uv run uvicorn app.admin.main:app
+      --host 0.0.0.0
+      --port 8002
+    ports:
+      - "8002:8002"    
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:
+  
+    
